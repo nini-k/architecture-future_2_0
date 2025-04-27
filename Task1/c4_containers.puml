@@ -1,0 +1,54 @@
+@startuml
+!include <C4/C4_Container>
+
+title Диаграмма контейнеров системы "Будущее 2.0"
+
+Person(operator, "Оператор в клинике", "")
+Person(analyst, "Аналитик", "")
+Person(manager, "Менеджер", "")
+
+System_Boundary(company, "Компания «Будущее 2.0»") {
+    Container(s3, "S3 хранилище", "MinIO", "")
+    Container(catalog_nessie, "Каталог данных", "Nessie", "")
+    Container(query_engine, "Движок запросов", "Dremio", "")
+    Container(airflow, "Apache Airflow", "Apache Airflow", "")
+    Container(legacy_dwh, "Legasy DWH", "MS SQL-сервер 2008", "")
+    Container(catalog_datahub, "Каталог данных", "DataHub", "")
+    Container(api_gateway, "API Gateway", "Nginx", "")
+    Container(auth_service, "Сервис аутентификации\nи авторизации", "Keycloak", "")
+    Container(client_ui, "Клиентский интерфейс оператора", "Power Builder", "")
+    Container(bi_system, "BI-система", "Power BI", "")
+    Container(internal_services, "Внутренние сервисы", "", "")
+}
+
+System_Ext(ai_services, "ИИ-сервисы", "ИИ-сервисы")
+System_Ext(fintech_services, "Финтех-сервисы", "Финтех-сервисы")
+
+Rel(operator, client_ui, "Использует")
+Rel(analyst, bi_system, "Использует")
+Rel(manager, internal_services, "Использует")
+
+Rel(bi_system, query_engine, "Запрашивает данные")
+Rel(bi_system, auth_service, "Аутентификация")
+
+Rel(client_ui, legacy_dwh, "Чтение/запись данных")
+Rel(client_ui, auth_service, "Аутентификация")
+
+Rel(airflow, legacy_dwh, "Управляет ETL-процессами")
+Rel(airflow, query_engine, "Управляет процессами")
+
+Rel(query_engine, catalog_nessie, "Использует метаданные")
+Rel(query_engine, s3, "Чтение/запись данных")
+
+Rel(api_gateway, catalog_datahub, "Предоставляет доступ")
+Rel(api_gateway, auth_service, "Аутентификация")
+
+Rel(catalog_datahub, query_engine, "Синхронизирует метаданные")
+Rel(catalog_datahub, auth_service, "Аутентификация")
+
+Rel(ai_services, api_gateway, "Интеграция через API")
+Rel(fintech_services, api_gateway, "Интеграция через API")
+
+Rel(internal_services, api_gateway, "Использует API")
+
+@enduml
